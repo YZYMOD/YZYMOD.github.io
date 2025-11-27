@@ -10,7 +10,6 @@
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	
 	<link rel="shortcut icon" type="image/png" href="https://cdn.jsdelivr.net/gh/genizy/fridayfunk/favicon.png">
-	
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/genizy/fridayfunk/Funkin.js"></script>
 	
 	<script>
@@ -22,120 +21,97 @@
 	</script>
 	
 	<style>
-		html,body { margin: 0; padding: 0; height: 100%; overflow: hidden; background:#000; }
+		html,body { margin: 0; padding: 0; height: 100%; overflow: hidden; background:black; }
 		#openfl-content { background: #000000; width: 100%; height: 100%; }
 
-		/* MODERN LOADING OVERLAY */
+		/* CUSTOM LOADER */
 		#custom-loader {
 			position: fixed;
-			top: 0;
-			left: 0;
-			width: 100vw;
-			height: 100vh;
+			inset: 0;
+			background: #000;
 			z-index: 9999;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			background: radial-gradient(circle at center, #111 0%, #000 70%);
 			transition: opacity 0.8s ease, visibility 0.8s ease;
-		}
-
-		#loader-content {
-			position: relative;
-			width: 100%;
-			height: 100%;
 		}
 
 		#loader-bg {
 			position:absolute;
-			top:0;
-			left:0;
-			width:100%;
-			height:100%;
+			inset:0;
 			background: url('./loading-YZYMOD.png') center center no-repeat;
 			background-size: cover;
 		}
 
-		/* PROGRESS BAR */
 		#loader-bar-container {
-			position:absolute;
-			bottom: 50px;
-			left: 50%;
-			transform: translateX(-50%);
+			position: absolute;
+			bottom: 60px;
 			width: 60%;
 			height: 12px;
 			background: rgba(255,255,255,0.15);
-			border-radius: 20px;
+			border-radius: 30px;
 			overflow: hidden;
-			box-shadow: 0 0 10px rgba(0,0,0,0.6);
 		}
 
 		#loader-bar {
 			height: 100%;
 			width: 0%;
-			background: linear-gradient(90deg, #ffffff, #bfbfbf);
-			border-radius: 20px;
-			transition: width 0.3s ease;
+			background: linear-gradient(90deg, #ffffff, #d0d0d0);
+			transition: width 0.2s ease;
 		}
 
 		#custom-loader.hide {
-			opacity: 0;
-			visibility: hidden;
-		} {
 			opacity: 0;
 			visibility: hidden;
 		}
 	</style>
 </head>
 <body>
-	<noscript>This webpage makes extensive use of JavaScript. Please enable JavaScript in your web browser to view this page.</noscript>
 
-	<!-- MODERN FULLSCREEN LOADER -->
-	<div id="custom-loader">
-		<div id="loader-content">
-			<div id="loader-bg"></div>
-			<div id="loader-bar-container">
-			<div id="loader-bar"></div>
-		</div>
-		</div>
+<noscript>This webpage makes extensive use of JavaScript. Please enable JavaScript in your web browser to view this page.</noscript>
+
+<!-- CUSTOM LOADING SCREEN -->
+<div id="custom-loader">
+	<div id="loader-bg"></div>
+	<div id="loader-bar-container">
+		<div id="loader-bar"></div>
 	</div>
-	
-	<div id="openfl-content"></div>
-	
-	<script type="text/javascript">
-		lime.embed ("Funkin", "openfl-content", 1280, 720, { parameters: {} });
-	</script>
+</div>
 
-	<script>
-		<script>
-	// Show briefly, then hide when actual game loading begins
-	<script>
-	// TRUE loading screen: stay visible until the game is fully ready
-	const loader = document.getElementById('custom-loader');
+<div id="openfl-content"></div>
 
-	// Keep loader ON while assets load
-	const loader = document.getElementById('custom-loader');
+<script>
+const loader = document.getElementById('custom-loader');
 const bar = document.getElementById('loader-bar');
-let progress = 0;
+let lastPercent = 0;
 
-// Fake smooth progress until game is fully ready
-const fakeProgress = setInterval(() => {
-	if (progress < 90) {
-		progress += Math.random() * 5;
-		bar.style.width = progress + "%";
+(function() {
+	const original = lime.embed;
+	lime.embed = function() {
+		const result = original.apply(this, arguments);
+		if (lime.loader && lime.loader.onProgress) {
+			lime.loader.onProgress = function(loaded, total) {
+				const percent = Math.floor((loaded / total) * 100);
+				if (percent > lastPercent) {
+					lastPercent = percent;
+					bar.style.width = percent + "%";
+				}
+			}
+		}
+		return result;
 	}
-}, 200);
+})();
 
-window.addEventListener('load', () => {
-	clearInterval(fakeProgress);
+window.addEventListener("load", () => {
 	bar.style.width = "100%";
-
 	setTimeout(() => {
 		loader.classList.add('hide');
 	}, 600);
 });
-		}, 500);
-	});
+</script>
+
+<script type="text/javascript">
+	lime.embed ("Funkin", "openfl-content", 1280, 720, { parameters: {} });
 </script>
 
 </body>
