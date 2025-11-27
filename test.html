@@ -56,25 +56,32 @@
 			background-size: cover;
 		}
 
-		#loader-spinner {
+		/* PROGRESS BAR */
+		#loader-bar-container {
 			position:absolute;
-			bottom: 40px;
+			bottom: 50px;
 			left: 50%;
 			transform: translateX(-50%);
-			width: 50px;
-			height: 50px;
-			border: 4px solid rgba(255,255,255,0.2);
-			border-top: 4px solid #ffffff;
-			border-radius: 50%;
-			animation: spin 1s linear infinite;
+			width: 60%;
+			height: 12px;
+			background: rgba(255,255,255,0.15);
+			border-radius: 20px;
+			overflow: hidden;
+			box-shadow: 0 0 10px rgba(0,0,0,0.6);
 		}
 
-		@keyframes spin {
-			from { transform: translateX(-50%) rotate(0deg); }
-			to { transform: translateX(-50%) rotate(360deg); }
+		#loader-bar {
+			height: 100%;
+			width: 0%;
+			background: linear-gradient(90deg, #ffffff, #bfbfbf);
+			border-radius: 20px;
+			transition: width 0.3s ease;
 		}
 
 		#custom-loader.hide {
+			opacity: 0;
+			visibility: hidden;
+		} {
 			opacity: 0;
 			visibility: hidden;
 		}
@@ -87,7 +94,9 @@
 	<div id="custom-loader">
 		<div id="loader-content">
 			<div id="loader-bg"></div>
-			<div id="loader-spinner"></div>
+			<div id="loader-bar-container">
+			<div id="loader-bar"></div>
+		</div>
 		</div>
 	</div>
 	
@@ -98,15 +107,36 @@
 	</script>
 
 	<script>
-		// Wait until OpenFL canvas appears, then fade loader
-		const checkReady = setInterval(() => {
-			const canvas = document.querySelector('#openfl-content canvas');
-			if (canvas) {
-				document.getElementById('custom-loader').classList.add('hide');
-				clearInterval(checkReady);
-			}
-		}, 300);
-	</script>
+		<script>
+	// Show briefly, then hide when actual game loading begins
+	<script>
+	// TRUE loading screen: stay visible until the game is fully ready
+	const loader = document.getElementById('custom-loader');
+
+	// Keep loader ON while assets load
+	const loader = document.getElementById('custom-loader');
+const bar = document.getElementById('loader-bar');
+let progress = 0;
+
+// Fake smooth progress until game is fully ready
+const fakeProgress = setInterval(() => {
+	if (progress < 90) {
+		progress += Math.random() * 5;
+		bar.style.width = progress + "%";
+	}
+}, 200);
+
+window.addEventListener('load', () => {
+	clearInterval(fakeProgress);
+	bar.style.width = "100%";
+
+	setTimeout(() => {
+		loader.classList.add('hide');
+	}, 600);
+});
+		}, 500);
+	});
+</script>
 
 </body>
 </html>
