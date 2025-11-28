@@ -49,18 +49,17 @@
     let FRAME_FILES = [];
     let FRAME_COUNT = 0;
     let frameImages = [];
-    let imagesLoadedCount = 0;
 
-    // Animation sets will be loaded from external frames.json
+    // Animation sets loaded from external frames.json
     let animationSets = {};
 
-    // Fetch frames.json
+    // Fetch frames.json and start once ready
     fetch('frames.json')
       .then(response => response.json())
       .then(data => {
         animationSets = data;
-        // Load default animation after JSON is ready
         loadAnimation('manuscript');
+        requestAnimationFrame(gameLoop);
       })
       .catch(err => {
         console.error('Failed to load frames.json', err);
@@ -73,12 +72,10 @@
       FRAME_FILES = data.frames;
       FRAME_COUNT = FRAME_FILES.length;
       frameImages = [];
-      imagesLoadedCount = 0;
       currentFrameIndex = 0;
 
       FRAME_FILES.forEach((fileName, index) => {
         const img = new Image();
-        img.onload = () => imagesLoadedCount++;
         img.src = fileName;
         frameImages[index] = img;
       });
@@ -86,8 +83,7 @@
 
     document.querySelectorAll('button').forEach(btn => {
       btn.addEventListener('click', () => {
-        const set = btn.dataset.set;
-        loadAnimation(set);
+        loadAnimation(btn.dataset.set);
       });
     });
 
@@ -108,30 +104,13 @@
 
       const img = frameImages[currentFrameIndex];
 
+      // Since all frames are same size, stretch directly to canvas
       if (img && img.complete) {
-        const ratio = Math.min(
-          canvas.width / img.width,
-          canvas.height / img.height
-        );
-
-        const drawWidth = img.width * ratio;
-        const drawHeight = img.height * ratio;
-
-        const x = (canvas.width - drawWidth) / 2;
-        const y = (canvas.height - drawHeight) / 2;
-
-        ctx.drawImage(img, x, y, drawWidth, drawHeight);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       }
 
       requestAnimationFrame(gameLoop);
     }
-
-    requestAnimationFrame(gameLoop);
-    }
-
-    // Load default animation
-    loadAnimation('manuscript');
-    requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>
