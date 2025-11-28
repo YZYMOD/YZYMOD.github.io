@@ -14,8 +14,6 @@
   </style>
 </head>
 <body>
-  <h1>Individual Frame Animation Test</h1>
-
   <!-- Canvas is now HALF of 1340x1936 -->
   <canvas id="spriteCanvas" width="670" height="968"></canvas>
 
@@ -27,16 +25,15 @@
     const ORIGINAL_WIDTH = 1340;
     const ORIGINAL_HEIGHT = 1936;
 
-    // Desired display size (half)
-    // Desired display size (half, then reduced by 25% to match your 75% zoom)
-const DISPLAY_WIDTH = (ORIGINAL_WIDTH / 2) * 0.75;  // 502.5
-const DISPLAY_HEIGHT = (ORIGINAL_HEIGHT / 2) * 0.75; // 726
+    // Desired display size (multiply original by 0.375)
+    const DISPLAY_WIDTH = ORIGINAL_WIDTH * 0.375;
+    const DISPLAY_HEIGHT = ORIGINAL_HEIGHT * 0.375;
 
-canvas.width = DISPLAY_WIDTH;
-canvas.height = DISPLAY_HEIGHT;
+    canvas.width = DISPLAY_WIDTH;
+    canvas.height = DISPLAY_HEIGHT;
 
-const FRAME_FILES = ['frame1.PNG', 'frame2.PNG', 'frame3.PNG'];
-const FRAME_COUNT = FRAME_FILES.length; = FRAME_FILES.length;
+    const FRAME_FILES = ['frame1.PNG', 'frame2.PNG', 'frame3.PNG'];
+    const FRAME_COUNT = FRAME_FILES.length;
 
     const frameImages = [];
     let imagesLoadedCount = 0;
