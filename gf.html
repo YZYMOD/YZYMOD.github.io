@@ -1,142 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Sprite Sheet Animation Test</title>
-    <style>
-        /* Optional: Basic styling for visibility */
-        #spriteCanvas {
-            border: 3px solid #6c757d;
-            background-color: #f8f9fa;
-            display: block;
-            margin: 20px auto;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Sprite Sheet Animation Test</title>
+  <style>
+    #spriteCanvas {
+      border: 3px solid #6c757d;
+      background-color: #f8f9fa;
+      display: block;
+      margin: 20px auto;
+    }
+    body { text-align: center; font-family: Arial, sans-serif; }
+  </style>
 </head>
 <body>
-    <h1>GF Dancing Animation Test</h1>
-    <canvas id="spriteCanvas" width="400" height="300"></canvas>
+  <h1>GF Dancing Animation Test</h1>
+  <!-- Canvas resized to comfortably fit 186x269 frames -->
+  <canvas id="spriteCanvas" width="500" height="350"></canvas>
 
-    <script id="xmlData" type="text/xml">
-        <?xml version="1.0" encoding="utf-8"?>
-        <TextureAtlas imagePath="Untitled_design_1.png">
-            <SubTexture name="GF Dancing0000" x="0" y="0" width="186" height="269"/>
-            <SubTexture name="GF Dancing0001" x="186" y="0" width="186" height="269"/>
-            <SubTexture name="GF Dancing0002" x="372" y="0" width="186" height="269"/>
-            <SubTexture name="GF Dancing0003" x="558" y="0" width="186" height="269"/>
-            <SubTexture name="GF Dancing0004" x="744" y="0" width="186" height="269"/>
-            <SubTexture name="GF Dancing0005" x="930" y="0" width="186" height="269"/>
-            <SubTexture name="GF Dancing0006" x="1116" y="0" width="186" height="269"/>
-            <SubTexture name="GF Dancing0007" x="1302" y="0" width="186" height="269"/>
-            <SubTexture name="GF Dancing0008" x="1488" y="0" width="186" height="269"/>
-            <SubTexture name="GF Dancing0009" x="1674" y="0" width="186" height="269"/>
-            <Animation name="GF_IDLE" anim="GF Dancing" indices="0,1,2,3,4,5,6,7,8,9" fps="12" loop="true"/>
-        </TextureAtlas>
-    </script>
-    
-    <script>
-        const canvas = document.getElementById('spriteCanvas');
-        const ctx = canvas.getContext('2d');
-        const XML_ID_ELEMENT = document.getElementById('xmlData');
-        
-        let spriteData = {}; // Stores frame coordinates and animation data
-        
-        // Use the image path defined in the embedded XML
-        const xmlText = XML_ID_ELEMENT.textContent;
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-        const IMAGE_FILE = xmlDoc.querySelector('TextureAtlas').getAttribute('imagePath');
-        
-        // 1. Load the Image (Sprite Sheet)
-        const spriteImage = new Image();
-        spriteImage.src = IMAGE_FILE;
+  <!-- IMPORTANT: Removed XML declaration because it breaks parsing inside HTML -->
+  <script id="xmlData" type="text/xml">
+    <TextureAtlas imagePath="Untitled_design_1.png">
+      <SubTexture name="GF Dancing0000" x="0" y="0" width="186" height="269"/>
+      <SubTexture name="GF Dancing0001" x="186" y="0" width="186" height="269"/>
+      <SubTexture name="GF Dancing0002" x="372" y="0" width="186" height="269"/>
+      <SubTexture name="GF Dancing0003" x="558" y="0" width="186" height="269"/>
+      <SubTexture name="GF Dancing0004" x="744" y="0" width="186" height="269"/>
+      <SubTexture name="GF Dancing0005" x="930" y="0" width="186" height="269"/>
+      <SubTexture name="GF Dancing0006" x="1116" y="0" width="186" height="269"/>
+      <SubTexture name="GF Dancing0007" x="1302" y="0" width="186" height="269"/>
+      <SubTexture name="GF Dancing0008" x="1488" y="0" width="186" height="269"/>
+      <SubTexture name="GF Dancing0009" x="1674" y="0" width="186" height="269"/>
+      <Animation name="GF_IDLE" anim="GF Dancing" indices="0,1,2,3,4,5,6,7,8,9" fps="12" loop="true"/>
+    </TextureAtlas>
+  </script>
 
-        // --- Parsing Function ---
-        function parseXMLData() {
-            // Parse SubTexture elements
-            const subTextures = xmlDoc.querySelectorAll('SubTexture');
-            subTextures.forEach(sub => {
-                spriteData[sub.getAttribute('name')] = {
-                    x: parseInt(sub.getAttribute('x')),
-                    y: parseInt(sub.getAttribute('y')),
-                    width: parseInt(sub.getAttribute('width')),
-                    height: parseInt(sub.getAttribute('height'))
-                };
-            });
+  <script>
+    const canvas = document.getElementById('spriteCanvas');
+    const ctx = canvas.getContext('2d');
 
-            // Parse Animation element
-            const animationElement = xmlDoc.querySelector('Animation[name="GF_IDLE"]');
-            spriteData.GF_IDLE_ANIMATION = {
-                prefix: animationElement.getAttribute('anim'),
-                indices: animationElement.getAttribute('indices').split(',').map(n => parseInt(n.trim())),
-                fps: parseInt(animationElement.getAttribute('fps')),
-                loop: animationElement.getAttribute('loop') === 'true'
-            };
+    let spriteData = {};
 
-            console.log("XML Data Parsed:", spriteData);
-        }
+    const xmlText = document.getElementById('xmlData').textContent.trim();
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
 
-        // --- Animation Loop ---
-        let currentFrameIndex = 0;
-        let lastTime = 0;
+    const atlas = xmlDoc.querySelector('TextureAtlas');
+    const IMAGE_FILE = atlas.getAttribute('imagePath');
 
-        spriteImage.onload = function() {
-            parseXMLData();
-            // Start the loop only once the image is ready
-            requestAnimationFrame(gameLoop);
+    const spriteImage = new Image();
+    spriteImage.src = IMAGE_FILE;
+
+    function parseXMLData() {
+      const subTextures = xmlDoc.querySelectorAll('SubTexture');
+      subTextures.forEach(sub => {
+        spriteData[sub.getAttribute('name')] = {
+          x: +sub.getAttribute('x'),
+          y: +sub.getAttribute('y'),
+          width: +sub.getAttribute('width'),
+          height: +sub.getAttribute('height')
         };
-        
-        // If the image fails to load (e.g., wrong path), this runs
-        spriteImage.onerror = function() {
-            console.error("Error loading sprite sheet image:", IMAGE_FILE);
-            alert(`Could not load image file: ${IMAGE_FILE}. Ensure it's in the same folder.`);
-        };
+      });
 
+      const anim = xmlDoc.querySelector('Animation[name="GF_IDLE"]');
+      spriteData.GF_IDLE_ANIMATION = {
+        prefix: anim.getAttribute('anim'),
+        indices: anim.getAttribute('indices').split(',').map(n => parseInt(n)),
+        fps: parseInt(anim.getAttribute('fps')),
+        loop: anim.getAttribute('loop') === 'true'
+      };
+    }
 
-        function gameLoop(currentTime) {
-            if (!lastTime) lastTime = currentTime;
-            const deltaTime = currentTime - lastTime;
-            
-            const animData = spriteData.GF_IDLE_ANIMATION;
-            // The time required for one frame to be displayed
-            const msPerFrame = 1000 / animData.fps; 
-            
-            // Check if enough time has passed to advance the frame
-            if (deltaTime >= msPerFrame) {
-                // Advance frame index and loop back to 0 if we hit the end
-                currentFrameIndex = (currentFrameIndex + 1) % animData.indices.length;
-                lastTime = currentTime - (deltaTime % msPerFrame); // Smooth out the animation timing
-            }
+    let currentFrameIndex = 0;
+    let lastTime = 0;
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    spriteImage.onload = () => {
+      parseXMLData();
+      requestAnimationFrame(gameLoop);
+    };
 
-            // Get the correct frame index from the animation indices
-            const frameNumber = animData.indices[currentFrameIndex];
-            // Construct the full frame name (e.g., "GF Dancing0000")
-            const frameName = animData.prefix + String(frameNumber).padStart(4, '0');
-            const frame = spriteData[frameName];
+    spriteImage.onerror = () => {
+      alert('Failed to load sprite image: ' + IMAGE_FILE);
+    };
 
-            if (frame) {
-                // Draw the frame onto the canvas
-                // The frame is drawn centered on the canvas (roughly)
-                const destX = (canvas.width / 2) - (frame.width / 2);
-                const destY = (canvas.height / 2) - (frame.height / 2);
+    function gameLoop(time) {
+      if (!lastTime) lastTime = time;
+      const delta = time - lastTime;
 
-                ctx.drawImage(
-                    spriteImage, // The entire sprite sheet
-                    frame.x,     // Source X
-                    frame.y,     // Source Y
-                    frame.width, // Source Width
-                    frame.height,// Source Height
-                    destX,       // Destination X on canvas
-                    destY,       // Destination Y on canvas
-                    frame.width, // Destination Width (scaled if needed)
-                    frame.height // Destination Height (scaled if needed)
-                );
-            }
+      const anim = spriteData.GF_IDLE_ANIMATION;
+      const msPerFrame = 1000 / anim.fps;
 
-            requestAnimationFrame(gameLoop); // Loop the animation
-        }
-    </script>
+      if (delta >= msPerFrame) {
+        currentFrameIndex = (currentFrameIndex + 1) % anim.indices.length;
+        lastTime = time;
+      }
 
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const frameNum = anim.indices[currentFrameIndex];
+      const frameName = anim.prefix + String(frameNum).padStart(4, '0');
+      const frame = spriteData[frameName];
+
+      if (frame) {
+        const scale = 1; // change to 2 to make sprite bigger
+
+        const drawW = frame.width * scale;
+        const drawH = frame.height * scale;
+
+        const x = (canvas.width - drawW) / 2;
+        const y = (canvas.height - drawH) / 2;
+
+        ctx.drawImage(
+          spriteImage,
+          frame.x,
+          frame.y,
+          frame.width,
+          frame.height,
+          x,
+          y,
+          drawW,
+          drawH
+        );
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+  </script>
 </body>
 </html>
