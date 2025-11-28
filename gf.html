@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Individual Frame Animation Test</title>
+  <title>Button Controlled Animation Test</title>
   <style>
     #spriteCanvas {
       border: 3px solid #6c757d;
@@ -11,53 +11,85 @@
       margin: 20px auto;
     }
     body { text-align: center; font-family: Arial, sans-serif; }
+    .controls {
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <!-- Canvas is now HALF of 1340x1936 -->
-  <canvas id="spriteCanvas" width="670" height="968"></canvas>
+
+  <div class="controls">
+    <button data-set="manuscript">Manuscript</button>
+    <button data-set="wip">WIP</button>
+    <button data-set="final">Final</button>
+  </div>
+
+  <canvas id="spriteCanvas"></canvas>
 
   <script>
     const canvas = document.getElementById('spriteCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Your original frame resolution
     const ORIGINAL_WIDTH = 1340;
     const ORIGINAL_HEIGHT = 1936;
 
-    // Desired display size (multiply original by 0.375)
     const DISPLAY_WIDTH = ORIGINAL_WIDTH * 0.375;
     const DISPLAY_HEIGHT = ORIGINAL_HEIGHT * 0.375;
 
     canvas.width = DISPLAY_WIDTH;
     canvas.height = DISPLAY_HEIGHT;
 
-    const FRAME_FILES = ['frame1.PNG', 'frame2.PNG', 'frame3.PNG'];
-    const FRAME_COUNT = FRAME_FILES.length;
-
-    const frameImages = [];
+    const FRAME_FPS = 12;
+    let FRAME_FILES = [];
+    let FRAME_COUNT = 0;
+    let frameImages = [];
     let imagesLoadedCount = 0;
 
-    const FRAME_FPS = 12;
+    // Animation sets will be loaded from external frames.json
+    let animationSets = {};
 
-    function loadFrames() {
-      return new Promise((resolve) => {
-        FRAME_FILES.forEach((fileName, index) => {
-          const img = new Image();
-          img.onload = () => {
-            imagesLoadedCount++;
-            if (imagesLoadedCount === FRAME_COUNT) resolve();
-          };
-          img.onerror = () => {
-            console.error(`Failed to load frame: ${fileName}`);
-            imagesLoadedCount++;
-            if (imagesLoadedCount === FRAME_COUNT) resolve();
-          };
-          img.src = fileName;
-          frameImages[index] = img;
-        });
+    // Fetch frames.json
+    fetch('frames.json')
+      .then(response => response.json())
+      .then(data => {
+        animationSets = data;
+        // Load default animation after JSON is ready
+        loadAnimation('manuscript');
+      })
+      .catch(err => {
+        console.error('Failed to load frames.json', err);
+      });
+
+    function loadAnimation(setName) {
+      const data = animationSets[setName];
+      if (!data || !data.frames) return;
+
+      FRAME_FILES = data.frames;
+      FRAME_COUNT = FRAME_FILES.length;
+      frameImages = [];
+      imagesLoadedCount = 0;
+      currentFrameIndex = 0;
+
+      FRAME_FILES.forEach((fileName, index) => {
+        const img = new Image();
+        img.onload = () => imagesLoadedCount++;
+        img.src = fileName;
+        frameImages[index] = img;
       });
     }
+
+    document.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const set = btn.dataset.set;
+        loadAnimation(set);
+      });
+    });
 
     let currentFrameIndex = 0;
     let lastTime = 0;
@@ -67,7 +99,7 @@
       if (!lastTime) lastTime = time;
       const delta = time - lastTime;
 
-      if (delta >= msPerFrame) {
+      if (delta >= msPerFrame && FRAME_COUNT > 0) {
         currentFrameIndex = (currentFrameIndex + 1) % FRAME_COUNT;
         lastTime = time;
       }
@@ -76,8 +108,7 @@
 
       const img = frameImages[currentFrameIndex];
 
-      if (img) {
-        // Maintain aspect ratio while fitting inside canvas
+      if (img && img.complete) {
         const ratio = Math.min(
           canvas.width / img.width,
           canvas.height / img.height
@@ -86,7 +117,6 @@
         const drawWidth = img.width * ratio;
         const drawHeight = img.height * ratio;
 
-        // Center the image
         const x = (canvas.width - drawWidth) / 2;
         const y = (canvas.height - drawHeight) / 2;
 
@@ -96,10 +126,12 @@
       requestAnimationFrame(gameLoop);
     }
 
-    loadFrames().then(() => {
-      console.log('All frames loaded. Starting animation.');
-      requestAnimationFrame(gameLoop);
-    });
+    requestAnimationFrame(gameLoop);
+    }
+
+    // Load default animation
+    loadAnimation('manuscript');
+    requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>
